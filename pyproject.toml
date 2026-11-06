@@ -22,6 +22,8 @@ classifiers = [
 ]
 dependencies = [
     "av>=9.0.0",
+    # ChildView: dziecko krokowane na greenlecie w wątku gospodarza (D52).
+    "greenlet>=3.0",
     "numpy>=1.19",
     # Pierwsza klatka widoku manimgl idzie do tekstury przez plik PNG.
     "pillow>=9.5.0",
