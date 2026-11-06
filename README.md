@@ -68,6 +68,72 @@ at video time `t`, without Manim.
   source.
 - Manim Community support is tested on 0.22 only, manimgl on 1.7.
 
+## ChildView
+
+`ChildView(host, child_class, *, height=4.0)` runs an ordinary child `Scene` inside an
+ordinary host `Scene`. Both must use the same engine. It creates no child movie or writer.
+The child may read `self.host`, for example in `wait_until`.
+
+Manim Community (Cairo):
+
+```python
+from manim import RED, RIGHT, UP, Scene, Square
+from manimsceneview import ChildView
+
+
+class Child(Scene):
+    def construct(self):
+        square = Square(fill_color=RED, fill_opacity=1)
+        self.add(square)
+        self.play(square.animate.shift(RIGHT), run_time=1)
+        self.wait_until(lambda: self.host.time >= 2)
+        self.play(square.animate.shift(UP), run_time=1)
+
+
+class Host(Scene):
+    def construct(self):
+        view = ChildView(self, Child, height=4)
+        self.add(view)
+        self.play(view.animate.scale(0.7).shift(2 * RIGHT), run_time=2)
+        self.wait(2)
+```
+
+For manimgl use the same classes and replace the engine import with:
+
+```python
+from manimlib import RED, RIGHT, UP, Scene, Square
+from manimsceneview import ChildView
+```
+
+Render with `python -m manim render -ql example.py Host` or
+`python -m manimlib example.py Host -w -l`. GL draws the child into its own framebuffer
+in the host's GPU context and samples that texture directly.
+
+The child advances once per host frame by `1 / host_fps`, including during `host.wait()`
+and animations of the view. The first sample is at `1 / host_fps`; there is no extra output
+sample at zero. Each child `play` or `wait` rounds its duration up to a whole host frame,
+includes its final sample, and leaves the final image visible after completion. Repeated
+updates at the same host time do not advance the child. Python and NumPy RNG states are
+kept separately for host and child; set the child's normal random seed for reproducibility.
+
+The view owns its greenlet and resources. Removing it with `host.remove(view)` (also inside
+a group), calling `view.close()`, or ending the host render closes it explicitly. Host
+`remove` and `tear_down` overrides are preserved. Copies used by animations share the child;
+add the original view to its host. Closing is permanent; create a new view to run it again.
+
+ChildView limitations:
+
+- Cooperative execution on one thread: child code between `play()` / `wait()` calls blocks
+  the host. A child must yield regularly.
+- Fixed child camera only: no `MovingCameraScene`, `ThreeDScene`, or GL camera frame motion.
+  Configure the child's camera before its animation instead. The camera's background color
+  is retained, with background opacity forced to zero.
+- No child audio or sections, and no nested ChildView.
+- CE host render cache is disabled from creation of the first ChildView, with one warning
+  per host. CE uses the child's configured Cairo camera at the view's initial pixel size;
+  enlarging the view later can soften the image.
+- GL support uses the ManimGL 1.7.2 scene initialization and shader API.
+
 ## Author, credits and license
 
 manim-sceneview is created and maintained by

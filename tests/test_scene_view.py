@@ -44,6 +44,11 @@ def near(actual, expected, tolerance: int = 60) -> bool:
 
 
 def python(code: str, clip: Path | None = None, cwd: Path | None = None) -> str:
+    if cwd is not None:
+        # Także test importu GL potrzebuje zapisywalnego cache poza profilem użytkownika.
+        (cwd / "custom_config.yml").write_text(
+            f"directories:\n  cache: {(cwd / 'cache').as_posix()}\n", encoding="utf-8"
+        )
     env = {**os.environ, "MANIMSCENEVIEW_TEST_CLIP": str(clip or "")}
     completed = subprocess.run(
         [sys.executable, "-c", code],
