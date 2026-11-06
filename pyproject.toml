@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling>=1.26"]
+build-backend = "hatchling.build"
+
+[project]
+name = "manim-sceneview"
+version = "0.1.0"
+description = "Rendered Manim scenes as mobjects inside another scene, for Manim Community and manimgl"
+readme = "README.md"
+authors = [{ name = "SirJamesClarkMaxwell" }]
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.11"
+keywords = ["manim", "manimgl", "animation", "video", "mobject"]
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Education",
+    "Intended Audience :: Science/Research",
+    "Programming Language :: Python :: 3",
+    "Topic :: Multimedia :: Graphics",
+    "Topic :: Multimedia :: Video",
+]
+dependencies = [
+    "av>=9.0.0",
+    "numpy>=1.19",
+    # Pierwsza klatka widoku manimgl idzie do tekstury przez plik PNG.
+    "pillow>=9.5.0",
+]
+
+[project.optional-dependencies]
+ce = [
+    # Widok korzysta z wewnętrznych pól ImageMobject CE (pixel_array, interpolate_color);
+    # sprawdzone tylko na 0.22, stąd <0.23.
+    "manim>=0.22,<0.23",
+    # <13: Manim CE 0.22 woła Image.fromarray(..., mode="RGBA") przy każdym ImageMobject
+    # w Cairo, a Pillow 13 usunął parametr mode → "Invalid mode for data type".
+    "pillow<13",
+]
+gl = [
+    "manimgl>=1.7.2,<1.8",
+    # manimgl -> pydub -> audioop, a audioop wypadł ze stdlib w Pythonie 3.13 (PEP 594).
+    "audioop-lts>=0.2; python_version >= '3.13'",
+    # manimgl importuje pkg_resources na starcie; granica z extry [manimgl] manim-slides.
+    "setuptools<80.10.2",
+]
+
+[project.urls]
+Homepage = "https://github.com/SirJamesClarkMaxwell/manim-sceneview"
+Repository = "https://github.com/SirJamesClarkMaxwell/manim-sceneview"
+Issues = "https://github.com/SirJamesClarkMaxwell/manim-sceneview/issues"
+"Used by manim-cue" = "https://github.com/SirJamesClarkMaxwell/manim-cue"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/manimsceneview"]
+
+[dependency-groups]
+dev = ["pytest>=8.4", "ruff>=0.13"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["gpu: wymaga prawdziwego kontekstu OpenGL (render manimgl)"]
+
+[tool.ruff]
+line-length = 100
