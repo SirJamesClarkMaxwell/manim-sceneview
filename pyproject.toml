@@ -16,7 +16,10 @@ classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Education",
     "Intended Audience :: Science/Research",
+    "Operating System :: Microsoft :: Windows",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.13",
     "Topic :: Multimedia :: Graphics",
     "Topic :: Multimedia :: Video",
 ]
@@ -54,6 +57,10 @@ Issues = "https://github.com/SirJamesClarkMaxwell/manim-sceneview/issues"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/manimsceneview"]
+
+[tool.hatch.build.targets.sdist]
+# Jawna lista: bez testów, benchmarków, locka i katalogów roboczych.
+include = ["/src/manimsceneview", "/README.md", "/LICENSE", "/pyproject.toml"]
 
 [dependency-groups]
 dev = ["pytest>=8.4", "ruff>=0.13"]

@@ -8,12 +8,18 @@ Works with both [Manim Community](https://github.com/ManimCommunity/manim) (Cair
 [manimgl](https://github.com/3b1b/manim). The engine is picked from your scene's class, and
 importing `manimsceneview` loads neither engine.
 
+`ChildView` goes one step further: it runs an ordinary scene live inside the host, one host
+frame at a time, without rendering it to a file first (see [ChildView](#childview)).
+
 ## Install
 
 ```bash
 pip install "manim-sceneview[ce]"   # Manim Community 0.22
 pip install "manim-sceneview[gl]"   # manimgl 1.7
 ```
+
+Requires Python ≥ 3.11; manimgl rendering needs ffmpeg on PATH. Tested with CPython 3.11
+and 3.13 on Windows 11; other systems are untested.
 
 ## Usage
 
@@ -138,7 +144,7 @@ ChildView limitations:
 
 manim-sceneview is created and maintained by
 [SirJamesClarkMaxwell](https://github.com/SirJamesClarkMaxwell), who conceived the project.
-It is released under the [MIT License](LICENSE).
+It is released under the [MIT License](https://github.com/SirJamesClarkMaxwell/manim-sceneview/blob/main/LICENSE).
 
 - It was first developed inside [manim-cue](https://github.com/SirJamesClarkMaxwell/manim-cue),
   the author's presentation tool, which is built on
