@@ -13,13 +13,25 @@ frame at a time, without rendering it to a file first (see [ChildView](#childvie
 
 ## Install
 
+The package is installed from GitHub (it is not on PyPI yet). Pick the extra for your engine,
+in the same environment as your Manim project:
+
 ```bash
-pip install "manim-sceneview[ce]"   # Manim Community 0.22
-pip install "manim-sceneview[gl]"   # manimgl 1.7
+pip install "manim-sceneview[ce] @ git+https://github.com/SirJamesClarkMaxwell/manim-sceneview"   # Manim Community 0.22
+pip install "manim-sceneview[gl] @ git+https://github.com/SirJamesClarkMaxwell/manim-sceneview"   # manimgl 1.7
 ```
 
-Requires Python ≥ 3.11; manimgl rendering needs ffmpeg on PATH. Tested with CPython 3.11
-and 3.13 on Windows 11; other systems are untested.
+In a [uv](https://docs.astral.sh/uv/) project use
+`uv add "manim-sceneview[ce] @ git+https://github.com/SirJamesClarkMaxwell/manim-sceneview"`
+(or `[gl]`).
+
+Requires Python ≥ 3.11 and git; manimgl rendering needs ffmpeg on PATH. Tested with
+CPython 3.11 and 3.13 on Windows 11; other systems are untested.
+
+**Using slides?** [manim-cue](https://github.com/SirJamesClarkMaxwell/manim-cue) installs
+manim-sceneview with both engines, so `SceneView` and `ChildView` work inside its `Slide`
+classes without a separate install — see
+[Embed scenes in slides](https://github.com/SirJamesClarkMaxwell/manim-cue#embed-scenes-in-slides).
 
 ## Usage
 
