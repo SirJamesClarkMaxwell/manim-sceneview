@@ -290,3 +290,52 @@ finally:
     sys.settrace(None)
     profiler.disable()
 """)
+
+
+@pytest.mark.parametrize("engine", ENGINES)
+def test_child_opacity(tmp_path, engine):
+    module = "manim" if engine == "ce" else "manimlib"
+    python(
+        f'''
+from {module} import Scene, Square, FadeIn, FadeOut, linear
+from manimsceneview import ChildView
+
+class Child(Scene):
+    def construct(self):
+        self.add(Square(side_length=4, fill_opacity=1, stroke_width=0, color="#FFFFFF"))
+        self.wait(20)
+
+class Host(Scene):
+    def construct(self):
+        view = ChildView(self, Child, height=4)
+        self.play(FadeIn(view), run_time=1, rate_func=linear)
+        assert view.state.steps >= 18, "child stopped during fade in"
+        if "{engine}" == "gl":
+            assert view.get_fill_opacity() == view.get_stroke_opacity() == 0
+        self.wait(0.2)
+        before = view.state.steps
+        self.play(FadeOut(view), run_time=1, rate_func=linear)
+        assert view.state.steps - before >= 18, "child stopped during fade out"
+        self.wait(0.2)
+        view = ChildView(self, Child, height=4)
+        self.add(view)
+        self.play(view.animate.set_opacity(0.5), run_time=1, rate_func=linear)
+        self.wait(0.2)
+
+if "{engine}" == "ce":
+    from manim import tempconfig
+    with tempconfig(dict(pixel_width=320, pixel_height=180, frame_rate=20,
+                         disable_caching=True, write_to_movie=True)):
+        Host().render()
+else:
+    Host(camera_config=dict(resolution=(320,180), fps=20, background_color="#000000"),
+         file_writer_config=dict(write_to_movie=True, output_directory="videos"),
+         show_animation_progress=False).run()
+''',
+        cwd=tmp_path,
+    )
+    files = [p for p in tmp_path.rglob("Host.mp4") if "partial_movie_files" not in p.parts]
+    assert len(files) == 1, files
+    clip = Clip(files[0])
+    values = [float(np.mean(clip.pixel(t))) / 255 for t in (0, 0.5, 1.1, 1.7, 2.3, 3.5)]
+    assert values == pytest.approx([0, 0.5, 1, 0.5, 0, 0.5], abs=0.09), values

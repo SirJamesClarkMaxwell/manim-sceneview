@@ -79,6 +79,7 @@ class ChildViewCE(ImageMobject):
         camera.reset_pixel_shape(pixel_height, pixel_width)
         camera.frame_width, camera.frame_height = frame_width, frame_height
         camera.reset()
+        self.view_opacity = 1.0
         super().__init__(camera.pixel_array.copy())
         self.stretch_to_fit_height(height)
         self.stretch_to_fit_width(height * camera.frame_width / camera.frame_height)
@@ -104,8 +105,23 @@ class ChildViewCE(ImageMobject):
             camera = self.state.child.camera
             camera.reset()
             camera.capture_mobjects(self.state.child.mobjects)
-            self.pixel_array = camera.pixel_array.copy()
+            self.show_frame()
         return super().update(dt, recursive)
+
+    def show_frame(self):
+        self.pixel_array = self.state.child.camera.pixel_array.copy()
+        self.pixel_array[:, :, 3] = (self.pixel_array[:, :, 3] * self.view_opacity).astype(np.uint8)
+
+    def set_opacity(self, alpha):
+        self.view_opacity = alpha
+        self.show_frame()
+        return self
+
+    def interpolate_color(self, mobject1, mobject2, alpha):
+        # Treść pochodzi z kamery dziecka, interpolujemy wyłącznie krycie widoku.
+        self.view_opacity = (1 - alpha) * mobject1.view_opacity + alpha * mobject2.view_opacity
+        self.show_frame()
+        return self
 
     @property
     def child(self):

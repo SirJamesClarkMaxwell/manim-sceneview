@@ -152,6 +152,30 @@ ChildView limitations:
   enlarging the view later can soften the image.
 - GL support uses the ManimGL 1.7.2 scene initialization and shader API.
 
+## Examples
+
+[slider_ce.py](examples/slider_ce.py) and [slider_gl.py](examples/slider_gl.py)
+show one host slider controlling a live wave and spinner. The views can be grouped,
+faded, moved and scaled while the children keep stepping.
+
+Run from the repository root (render `Source` before `Scrub`):
+
+```bash
+manim render -ql examples/slider_ce.py Sliders
+manim render -ql examples/slider_ce.py Source
+manim render -ql examples/slider_ce.py Scrub
+
+manimgl examples/slider_gl.py Sliders -w -l
+manimgl examples/slider_gl.py Source -w -l
+manimgl examples/slider_gl.py Scrub -w -l
+```
+
+CE writes `media/videos/slider_ce/480p15/{Sliders,Source,Scrub}.mp4`;
+GL writes `videos/{Sliders,Source,Scrub}.mp4`, relative to the working directory.
+`Scrub` pauses a `SceneView` and maps the slider range [0, 1] to the four-second
+`Source` clip, including backward seeking. `ChildView` only steps forwards;
+backward video seeking decodes again from the beginning without a new cache.
+
 ## Author, credits and license
 
 manim-sceneview is created and maintained by

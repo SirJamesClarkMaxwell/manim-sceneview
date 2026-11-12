@@ -146,6 +146,7 @@ class DrawBridge:
 
 class ChildViewGL(Rectangle):
     def __init__(self, host, child_class, *, height):
+        self.view_opacity = 1.0
         self.state = ChildState(host)
         state = self.state
         self.resources = []
@@ -178,6 +179,15 @@ class ChildViewGL(Rectangle):
             stroke_opacity=0,
         )
         self.add_updater(lambda mob, dt: None)
+
+    def set_opacity(self, opacity, recurse=True):
+        # Prostokąt jest tylko geometrią; krycie dotyczy obrazu FBO.
+        self.view_opacity = opacity
+        return self
+
+    def interpolate(self, mobject1, mobject2, alpha, *args, **kwargs):
+        self.view_opacity = (1 - alpha) * mobject1.view_opacity + alpha * mobject2.view_opacity
+        return super().interpolate(mobject1, mobject2, alpha, *args, **kwargs)
 
     @property
     def child(self):
@@ -222,6 +232,7 @@ class ChildViewGL(Rectangle):
             # Początek FBO jest na dole, odwrotnie niż w ImageMobject.
             self.image.data["point"][:] = self.get_corner_points()
             self.image.data["im_coords"][:] = [(0, 1), (0, 0), (1, 1), (1, 0), (1, 1), (0, 0)]
+            self.image.data["opacity"][:] = self.view_opacity
             self.image.note_changed_data()
             self.image.render(ctx, uniforms)
             ctx.finish()
