@@ -14,16 +14,22 @@ from test_scene_view import Clip
 
 @pytest.mark.parametrize("engine", ENGINES)
 def test_slider_examples(tmp_path, engine):
-    scene_file = Path(__file__).parents[1] / "examples" / f"slider_{engine}.py"
+    examples = Path(__file__).parents[1] / "examples"
+    folder = examples if engine == "ce" else examples / "gl"
     (tmp_path / "custom_config.yml").write_text(
         f"camera:\n  background_color: '#000000'\ndirectories:\n  cache: {(tmp_path / 'cache').as_posix()}\n",
         encoding="utf-8",
     )
     clips = {}
-    for name in ("Source", "Sliders", "Scrub"):
+    for name, scene_file in (
+        ("Source", examples / "clips.py"),
+        ("Sliders", folder / "05_sliders.py"),
+        ("Scrub", folder / "06_scrub.py"),
+    ):
+        render_engine = "ce" if name == "Source" else engine
         command = (
             [sys.executable, "-m", "manim", "render", "-ql", str(scene_file), name]
-            if engine == "ce"
+            if render_engine == "ce"
             else [sys.executable, "-m", "manimlib", str(scene_file), name, "-w", "-l"]
         )
         result = subprocess.run(

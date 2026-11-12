@@ -1,23 +1,16 @@
-"""One host slider controls two live scenes; another scrubs a finished clip.
+"""Sliders. Run from repository root:
 
-Run from the repository root, Source before Scrub:
+    python -m manim render -ql examples/clips.py Source
+    python -m manimlib examples/gl/05_sliders.py Sliders -w -l
 
-    manimgl examples/slider_gl.py Source -w -l
-    manimgl examples/slider_gl.py Sliders -w -l
-    manimgl examples/slider_gl.py Scrub -w -l
-
-Source output (relative to the working directory): videos/Source.mp4
-Sliders and Scrub use the same output directory, with their scene names.
-The slider spans [0, 1], mapping to [0, 4] seconds; Scrub moves forwards,
-backwards to 1 second, then forwards to 3 seconds. Backward seeking decodes
-from the start; ChildView itself only steps forwards.
+Source: media/videos/clips/480p15/Source.mp4.
+Output: videos/Sliders.mp4
 """
 
 import numpy as np
 from manimlib import (
     BLUE,
     DOWN,
-    LEFT,
     PI,
     RED,
     RIGHT,
@@ -26,7 +19,6 @@ from manimlib import (
     Dot,
     FadeIn,
     Group,
-    Line,
     NumberLine,
     Scene,
     Square,
@@ -36,7 +28,7 @@ from manimlib import (
     linear,
 )
 
-from manimsceneview import ChildView, SceneView
+from manimsceneview import ChildView
 
 
 class Wave(Scene):
@@ -89,31 +81,3 @@ class Sliders(Scene):
             rate_func=linear,
         )
         self.wait(0.5)
-
-
-class Source(Scene):
-    def construct(self):
-        self.add(Line(4 * LEFT, 4 * RIGHT))
-        dot = Dot(4 * LEFT, radius=0.3).set_color(RED)
-        self.add(dot)
-        self.play(dot.animate.shift(8 * RIGHT), run_time=4, rate_func=linear)
-
-
-class Scrub(Scene):
-    def construct(self):
-        self.k = ValueTracker(0)
-        line = NumberLine(x_range=[0, 1, 0.25]).set_width(6).shift(2.6 * DOWN)
-        marker = Dot(color=RED)
-        marker.add_updater(lambda mob: mob.move_to(line.n2p(self.k.get_value())))
-        number = DecimalNumber(0, num_decimal_places=2).next_to(line, RIGHT)
-        number.add_updater(lambda mob: mob.set_value(self.k.get_value()))
-        view = SceneView(self, "videos/Source.mp4", height=4).shift(0.5 * UP)
-        view.pause()
-        view.add_updater(lambda mob: mob.seek(4 * self.k.get_value()))
-        self.add(view, line, marker, number)
-        self.play(self.k.animate.set_value(1), run_time=2, rate_func=linear)
-        self.wait(0.2)
-        self.play(self.k.animate.set_value(0.25), run_time=2, rate_func=linear)
-        self.wait(0.4)
-        self.play(self.k.animate.set_value(0.75), run_time=1, rate_func=linear)
-        self.wait(0.2)

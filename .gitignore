@@ -8,3 +8,5 @@ build/
 media/
 videos/
 .tmp/
+
+.example-media/
