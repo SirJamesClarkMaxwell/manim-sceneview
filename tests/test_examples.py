@@ -28,7 +28,15 @@ def test_slider_examples(tmp_path, engine):
     ):
         render_engine = "ce" if name == "Source" else engine
         command = (
-            [sys.executable, "-m", "manim", "render", "-ql", str(scene_file), name]
+            [
+                sys.executable,
+                "-m",
+                "manim",
+                "render",
+                "-qm" if name == "Source" else "-ql",
+                str(scene_file),
+                name,
+            ]
             if render_engine == "ce"
             else [sys.executable, "-m", "manimlib", str(scene_file), name, "-w", "-l"]
         )

@@ -12,7 +12,7 @@ import pytest
 import manimsceneview
 
 ROOT = Path(__file__).resolve().parents[1]
-CLIP = "media/videos/clips/480p15/Source.mp4"
+CLIP = "media/videos/clips/720p30/Source.mp4"
 FENCE = re.compile(r"^```python\n(.*?)^```", re.MULTILINE | re.DOTALL)
 
 

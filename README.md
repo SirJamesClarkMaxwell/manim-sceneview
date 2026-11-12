@@ -1,8 +1,8 @@
 # manim-sceneview
 
 <p align="center">
-  <img src="https://raw.githubusercontent.com/SirJamesClarkMaxwell/manim-sceneview/main/examples/01_video.gif" width="49%" alt="video">
-  <img src="https://raw.githubusercontent.com/SirJamesClarkMaxwell/manim-sceneview/main/examples/05_sliders.gif" width="49%" alt="sliders">
+  <img src="https://raw.githubusercontent.com/SirJamesClarkMaxwell/manim-sceneview/main/examples/01_video.gif" width="49%" alt="A playing video moves, scales and rotates">
+  <img src="https://raw.githubusercontent.com/SirJamesClarkMaxwell/manim-sceneview/main/examples/05_sliders.gif" width="49%" alt="One slider controls two live child panels">
 </p>
 
 Use a rendered video or a live child scene as an ordinary Manim mobject. Move, scale,
@@ -57,24 +57,31 @@ both engines and supports these views inside its `Slide` classes; see
 From the repository root, first render the shared four-second clip:
 
 ```sh
-python -m manim render -ql examples/clips.py Source
+python -m manim render -qm examples/clips.py Source
 ```
 
-Save this as `first_view.py`, then run `python -m manim render -ql first_view.py Video`.
+Save this as `first_view.py`, then run `python -m manim render -qm first_view.py Video`.
 All video examples below use that same source path, relative to the repository root.
 In your own project replace it with any finished constant-frame-rate video.
 
 ```python
-from manim import PI, RIGHT, FadeIn, Scene
+from manim import PI, RIGHT, FadeIn, Group, Scene, SurroundingRectangle
 
 from manimsceneview import SceneView
 
 
 class Video(Scene):
     def construct(self):
-        view = SceneView(self, "media/videos/clips/480p15/Source.mp4", height=4, loop=True)
-        self.play(FadeIn(view))
-        self.play(view.animate.scale(0.7).shift(2 * RIGHT).rotate(PI / 8), run_time=3)
+        view = SceneView(self, "media/videos/clips/720p30/Source.mp4", height=4, loop=True)
+        screen = Group(view, SurroundingRectangle(view, buff=0))
+        self.play(FadeIn(screen, suspend_mobject_updating=False))
+        self.play(
+            screen.animate(suspend_mobject_updating=False)
+            .scale(0.7)
+            .shift(2 * RIGHT)
+            .rotate(PI / 8),
+            run_time=3,
+        )
         self.wait(1)
 ```
 
@@ -92,10 +99,10 @@ from manimsceneview import FrameSource, SceneView
 
 class Sample(Scene):
     def construct(self):
-        source = FrameSource("media/videos/clips/480p15/Source.mp4")
+        source = FrameSource("media/videos/clips/720p30/Source.mp4")
         assert source.rgba(1).shape[2] == 4
         source.close()
-        self.add(SceneView(self, "media/videos/clips/480p15/Source.mp4", height=4))
+        self.add(SceneView(self, "media/videos/clips/720p30/Source.mp4", height=4))
         self.wait(2)
 ```
 
@@ -112,7 +119,7 @@ from manimsceneview import SceneView
 
 class Control(Scene):
     def construct(self):
-        view = SceneView(self, "media/videos/clips/480p15/Source.mp4", height=4, rate=2, loop=True)
+        view = SceneView(self, "media/videos/clips/720p30/Source.mp4", height=4, rate=2, loop=True)
         label = Text("2x speed / loop", font_size=30).shift(3 * UP)
         self.add(view, label)
         self.wait(3)
@@ -131,7 +138,7 @@ A live child reads its host through `self.host`; both scenes must use the same e
 No child movie is written. Add the original view to its host.
 
 ```python
-from manim import BLUE, RIGHT, UP, Scene, Square
+from manim import BLUE, RIGHT, UP, Group, Scene, Square, SurroundingRectangle
 
 from manimsceneview import ChildView
 
@@ -148,15 +155,28 @@ class Child(Scene):
 class Host(Scene):
     def construct(self):
         view = ChildView(self, Child, height=4)
-        self.add(view)
-        self.play(view.animate.scale(0.8).shift(RIGHT), run_time=2)
+        panel = SurroundingRectangle(
+            view,
+            buff=0,
+            fill_color="#1c2533",
+            fill_opacity=1,
+        )
+        screen = Group(panel, view)
+        self.add(screen)
+        self.play(
+            screen.animate(suspend_mobject_updating=False).scale(0.8).shift(RIGHT),
+            run_time=2,
+        )
         self.wait(2)
 ```
 
 ### 4. Combining with ordinary mobjects and animations
 
 Use `Group` for image views (CE `VGroup` accepts vector mobjects only). Each view below
-has its own playback; copies of one view share its playback and decoder.
+can be grouped with a thin `SurroundingRectangle(view, buff=0)` border. Put a filled
+panel behind a transparent `ChildView`, then animate the group to move the screen and
+its contents together. Use `suspend_mobject_updating=False` on group animations
+to keep nested views updating throughout the animation. Each view has its own playback; copies of one view share its playback and decoder.
 
 ```python
 from manim import RIGHT, UP, Group, Scene
@@ -169,25 +189,27 @@ class Grid(Scene):
         views = Group(
             *[
                 SceneView(
-                    self, "media/videos/clips/480p15/Source.mp4", height=2, rate=rate, loop=True
+                    self, "media/videos/clips/720p30/Source.mp4", height=2, rate=rate, loop=True
                 )
                 for rate in (0.5, 1, 1.5, 2)
             ]
         ).arrange_in_grid(rows=2, buff=0.3)
         self.add(views)
         self.wait(2)
-        self.play(views.animate.scale(0.8).shift(RIGHT + UP), run_time=2)
+        self.play(
+            views.animate(suspend_mobject_updating=False).scale(0.8).shift(RIGHT + UP), run_time=2
+        )
         self.wait(1)
 ```
 
 ### 5. manimgl differences
 
 Import scene objects from `manimlib`. Save this as `live_gl.py` and run
-`python -m manimlib live_gl.py Host -w -l`. GL draws the child into its own framebuffer
+`python -m manimlib live_gl.py Host -w -m`. GL draws the child into its own framebuffer
 in the host GPU context and samples that texture directly.
 
 ```python
-from manimlib import BLUE, RIGHT, UP, Scene, Square
+from manimlib import BLUE, RIGHT, UP, Group, Scene, Square, SurroundingRectangle
 
 from manimsceneview import ChildView
 
@@ -204,8 +226,18 @@ class Child(Scene):
 class Host(Scene):
     def construct(self):
         view = ChildView(self, Child, height=4)
-        self.add(view)
-        self.play(view.animate.scale(0.8).shift(RIGHT), run_time=2)
+        panel = SurroundingRectangle(
+            view,
+            buff=0,
+            fill_color="#1c2533",
+            fill_opacity=1,
+        )
+        screen = Group(panel, view)
+        self.add(screen)
+        self.play(
+            screen.animate(suspend_mobject_updating=False).scale(0.8).shift(RIGHT),
+            run_time=2,
+        )
         self.wait(2)
 ```
 
@@ -251,6 +283,7 @@ drift across `play()` calls. `current_frame()` returns the current RGBA NumPy ar
 
 Click a GIF for its runnable source; each file documents its render commands and paths.
 The source clip is [`clips.py`](examples/clips.py). All movies and GIFs sit beside the code.
+Movies are 720p30; GIFs are 640 px wide at 12 fps so captions and clip clocks remain visible.
 
 <table>
 <tr>

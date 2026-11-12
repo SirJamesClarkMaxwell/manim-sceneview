@@ -14,7 +14,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 MEDIA = ROOT / ".example-media"
 GIF = (
-    "fps=12,scale=480:-1:flags=lanczos,split[a][b];"
+    "fps=12,scale=640:-1:flags=lanczos,split[a][b];"
     "[a]palettegen=stats_mode=diff[p];[b][p]paletteuse=dither=bayer:bayer_scale=5"
     ":diff_mode=rectangle"
 )
@@ -43,7 +43,7 @@ def render(script, scene, gl=False):
             str(script),
             scene,
             "-w",
-            "-l",
+            "-m",
             "--config_file",
             str(config),
             "--video_dir",
@@ -55,7 +55,7 @@ def render(script, scene, gl=False):
             "-m",
             "manim",
             "render",
-            "-ql",
+            "-qm",
             "--disable_caching",
             "--progress_bar",
             "none",
@@ -68,7 +68,7 @@ def render(script, scene, gl=False):
     return (
         MEDIA / "gl" / f"{scene}.mp4"
         if gl
-        else MEDIA / "videos" / script.stem / "480p15" / f"{scene}.mp4"
+        else MEDIA / "videos" / script.stem / "720p30" / f"{scene}.mp4"
     )
 
 
@@ -82,7 +82,7 @@ def main():
     if not selected:
         parser.error("no matching example")
     source = render(ROOT / "examples/clips.py", "Source")
-    target = ROOT / "media/videos/clips/480p15/Source.mp4"
+    target = ROOT / "media/videos/clips/720p30/Source.mp4"
     target.parent.mkdir(parents=True, exist_ok=True)
     shutil.copyfile(source, target)
     for stem in selected:

@@ -1,10 +1,10 @@
 """Scrub. Run from repository root:
 
-    python -m manim render -ql examples/clips.py Source
-    python -m manim render -ql examples/06_scrub.py Scrub
+    python -m manim render -qm examples/clips.py Source
+    python -m manim render -qm examples/06_scrub.py Scrub
 
-Source: media/videos/clips/480p15/Source.mp4.
-Output: media/videos/06_scrub/480p15/Scrub.mp4
+Source: media/videos/clips/720p30/Source.mp4.
+Output: media/videos/06_scrub/720p30/Scrub.mp4
 """
 
 from manim import (
@@ -14,8 +14,10 @@ from manim import (
     UP,
     DecimalNumber,
     Dot,
+    Group,
     NumberLine,
     Scene,
+    SurroundingRectangle,
     Text,
     ValueTracker,
     linear,
@@ -32,13 +34,17 @@ class Scrub(Scene):
         marker.add_updater(lambda mob: mob.move_to(line.n2p(self.k.get_value())))
         number = DecimalNumber(0, num_decimal_places=2, mob_class=Text).next_to(line, RIGHT)
         number.add_updater(lambda mob: mob.set_value(self.k.get_value()))
-        view = SceneView(self, "media/videos/clips/480p15/Source.mp4", height=4).shift(0.5 * UP)
+        view = SceneView(self, "media/videos/clips/720p30/Source.mp4", height=4).shift(0.5 * UP)
         view.pause()
         view.add_updater(lambda mob: mob.seek(4 * self.k.get_value()))
-        self.add(view, line, marker, number)
+        screen = Group(view, SurroundingRectangle(view, buff=0, color="#8da9ce", stroke_width=2))
+        label = Text("scrub forwards", font_size=32).shift(3.2 * UP)
+        self.add(screen, line, marker, number, label)
         self.play(self.k.animate.set_value(1), run_time=2, rate_func=linear)
         self.wait(0.2)
+        label.become(Text("scrub backwards", font_size=32).move_to(label))
         self.play(self.k.animate.set_value(0.25), run_time=2, rate_func=linear)
         self.wait(0.4)
+        label.become(Text("seek(1) - then forwards", font_size=32).move_to(label))
         self.play(self.k.animate.set_value(0.75), run_time=1, rate_func=linear)
         self.wait(0.2)
