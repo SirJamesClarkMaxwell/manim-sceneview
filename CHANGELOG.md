@@ -4,7 +4,7 @@ All notable changes are documented here, following [Keep a Changelog](https://ke
 
 ## [Unreleased]
 
-## [0.1.0] - 2026-11-XX
+## [0.1.0] - 2026-11-13
 
 ### Added
 
